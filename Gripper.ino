@@ -1,16 +1,18 @@
 #include <Servo.h>
 
+// Pin definitions
 const int servoPin = 9;
 const int buttonPin = 2;
 const int ledPin = 13;
 const int emgPin = A0;
 
+// Servo motor object
 Servo handServo;
 const int OPEN_POSITION = 0;
 const int CLOSED_POSITION = 180;
 int currentPosition = OPEN_POSITION;
 
-
+// Button state variables
 bool handClosed = false;           
 bool lastButtonState = HIGH;      
 bool currentButtonState = HIGH;    
@@ -20,10 +22,12 @@ unsigned long debounceDelay = 50;
 void setup() {
   Serial.begin(9600);
   
+  // Initialize hardware
   handServo.attach(servoPin);
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
   
+  // Set initial state
   handServo.write(OPEN_POSITION);
   handClosed = false;
   digitalWrite(ledPin, LOW);
@@ -34,6 +38,7 @@ void setup() {
 }
 
 void loop() {
+  // Button control with debouncing
   int buttonReading = digitalRead(buttonPin);
   
   if (buttonReading != lastButtonState) {
@@ -45,7 +50,6 @@ void loop() {
     if (buttonReading != currentButtonState) {
       currentButtonState = buttonReading;
       
- 
       if (currentButtonState == LOW) {
         toggleHandState();  
       }
@@ -54,6 +58,7 @@ void loop() {
   
   lastButtonState = buttonReading;
 
+  // EMG sensor control
   int emgValue = analogRead(emgPin);
   if (emgValue > 512) {
     if (!handClosed) {
@@ -65,8 +70,10 @@ void loop() {
     }
   }
   
+  // Update LED status
   digitalWrite(ledPin, handClosed);
   
+  // Status reporting
   static unsigned long lastPrint = 0;
   if (millis() - lastPrint > 500) {
     Serial.print("Hand State: ");
@@ -82,6 +89,7 @@ void loop() {
   delay(10); 
 }
 
+// Toggle between open and closed states
 void toggleHandState() {
   if (handClosed) {
     openHand();
@@ -90,6 +98,7 @@ void toggleHandState() {
   }
 }
 
+// Close hand with smooth movement
 void closeHand() {
   Serial.println("Button pressed - CLOSING hand...");
   
@@ -107,6 +116,7 @@ void closeHand() {
   Serial.println("Hand is now CLOSED");
 }
 
+// Open hand with smooth movement
 void openHand() {
   Serial.println("Button pressed - OPENING hand...");
 
